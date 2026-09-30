@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>СГУ ЭЛИНА // MINIMAL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            carbon: {
+              950: '#07080b',
+              900: '#0c0e14',
+              850: '#11141c',
+              800: '#181c28',
+              700: '#23283a',
+              border: '#1f2433'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    input[type=range] {
+      touch-action: auto;
+    }
+    .tap-highlight-none {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tactile-btn {
+      transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tactile-btn:active {
+      transform: scale(0.97);
+    }
+    .active-glow-red {
+      box-shadow: 0 0 20px -3px rgba(239, 68, 68, 0.45), inset 0 0 12px rgba(239, 68, 68, 0.2);
+    }
+    .active-glow-blue {
+      box-shadow: 0 0 20px -3px rgba(59, 130, 246, 0.45), inset 0 0 12px rgba(59, 130, 246, 0.2);
+    }
+    .active-glow-amber {
+      box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.45), inset 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+    @keyframes mini-strobe-r {
+      0%, 100% { opacity: 0.15; }
+      20%, 40% { opacity: 1; filter: drop-shadow(0 0 6px #ef4444); }
+    }
+    @keyframes mini-strobe-b {
+      0%, 100% { opacity: 0.15; }
+      50%, 70% { opacity: 1; filter: drop-shadow(0 0 6px #3b82f6); }
+    }
+    .strobe-r { animation: mini-strobe-r 0.6s infinite; }
+    .strobe-b { animation: mini-strobe-b 0.6s infinite; }
+  </style>
+</head>
+<body class="bg-carbon-950 text-zinc-100 min-h-screen flex flex-col justify-between font-sans selection:bg-zinc-800 antialiased tap-highlight-none">
+
+  <!-- Минималистичная верхняя панель индикации -->
+  <header class="w-full border-b border-carbon-border bg-carbon-900/90 backdrop-blur px-4 py-2.5 sticky top-0 z-50">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-2 h-2 rounded-full bg-red-500" id="sysLed"></div>
+        <span class="font-mono text-xs font-bold tracking-wider text-zinc-200">ЭЛИНА // БАРС & СМЕРЧ</span>
+      </div>
+
+      <!-- Миниатюрная балка спецсигналов и индикатор режима -->
+      <div class="flex items-center gap-2">
+        <button id="btnHeaderSgo" title="Включить режим СГО (мигалка)" class="flex items-center gap-1 bg-carbon-950 px-2 py-0.5 rounded border border-carbon-border hover:border-zinc-500 active:scale-95 transition cursor-pointer">
+          <span id="strobeR" class="w-2 h-1.5 rounded-sm bg-red-500/30"></span>
+          <span id="strobeB" class="w-2 h-1.5 rounded-sm bg-blue-500/30"></span>
+        </button>
+        <span id="activeModeLabel" class="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">ГОТОВ</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Центральный пульт управления -->
+  <main class="max-w-md mx-auto px-3.5 py-4 w-full flex-1 flex flex-col gap-3.5 justify-center">
+
+    <!-- БЛОК 1: ДВА ГЛАВНЫХ ОПЕРАТИВНЫХ ОРГАНА (ГОРН 70 Гц И MANUAL) -->
+    <div class="grid grid-cols-2 gap-2.5">
+      <!-- ГОРН «ЭЛИНА» (КРЯК 70 Гц) -->
+      <button id="btnKryakElina" class="tactile-btn py-5 px-3 rounded-xl bg-carbon-850 border border-red-500/50 hover:border-red-500 active:bg-red-950/40 text-left flex flex-col justify-between shadow-lg cursor-pointer">
+        <div class="flex items-center justify-between w-full">
+          <span class="text-[10px] font-mono uppercase text-red-400 font-bold tracking-wider">HORN 70HZ</span>
+          <span class="w-2 h-2 rounded-full bg-red-500 opacity-0 transition-opacity" id="kryakLed"></span>
+        </div>
+        <div class="mt-3">
+          <div class="font-mono text-base font-extrabold text-white tracking-wide">КРЯК</div>
+          <div class="text-[10px] font-mono text-zinc-400">Тап / Удержание</div>
+        </div>
+      </button>
+
+      <!-- MANUAL (РУЧНОЙ ПОДВЫВ) -->
+      <button id="btnManual" class="tactile-btn py-5 px-3 rounded-xl bg-carbon-850 border border-blue-500/40 hover:border-blue-500 active:bg-blue-950/40 text-left flex flex-col justify-between shadow-lg cursor-pointer">
+        <div class="flex items-center justify-between w-full">
+          <span class="text-[10px] font-mono uppercase text-blue-400 font-bold tracking-wider">MANUAL</span>
+          <span class="w-2 h-2 rounded-full bg-blue-500 opacity-0 transition-opacity" id="manualLed"></span>
+        </div>
+        <div class="mt-3">
+          <div class="font-mono text-base font-extrabold text-white tracking-wide">ПОДВЫВ</div>
+          <div class="text-[10px] font-mono text-zinc-400">Разгон при зажатии</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- БЛОК 2: СЕТКА СИРЕН (WAIL 1, WAIL 2, SRT «ПЛАЧ», YELP, HI-LO, КРЯК x2) -->
+    <div class="bg-carbon-900 border border-carbon-border rounded-xl p-3 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500 px-0.5">
+        <span>СИРЕНЫ «СМЕРЧ» (ГОСТ Р 50574)</span>
+        <button id="stopBtn" class="tactile-btn text-zinc-400 hover:text-red-400 font-bold uppercase transition flex items-center gap-1">
+          <span class="w-1.5 h-1.5 bg-red-500 rounded-xs"></span> СТОП ВСЁ
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 font-mono">
+
+        <!-- WAIL 1 (ГОСТ 4.4с) -->
+        <button data-siren="wail1" class="siren-btn tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-carbon-border hover:border-zinc-500 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-zinc-100">WAIL 1</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">ГОСТ 4.4с</span>
+        </button>
+
+        <!-- WAIL 2 (Скоростной 2.7с) -->
+        <button data-siren="wail2" class="siren-btn tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-carbon-border hover:border-zinc-500 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-zinc-100">WAIL 2</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">Быстрый 2.7с</span>
+        </button>
+
+        <!-- SRT «ПЛАЧ» (Плачущий спецсигнал) -->
+        <button data-siren="srt" class="siren-btn tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-amber-500/40 hover:border-amber-400 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-amber-400">SRT ПЛАЧ</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">Надрывный</span>
+        </button>
+
+        <!-- YELP (Погоня) -->
+        <button data-siren="yelp" class="siren-btn tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-carbon-border hover:border-zinc-500 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-zinc-100">YELP</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">Визг 3.8 Гц</span>
+        </button>
+
+        <!-- HI-LO (2 тона) -->
+        <button data-siren="hilo" class="siren-btn tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-carbon-border hover:border-zinc-500 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-zinc-100">HI-LO</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">680/940 Гц</span>
+        </button>
+
+        <!-- ДВОЙНОЙ КРЯК -->
+        <button id="btnDoubleKryak" class="tactile-btn py-3 px-2 rounded-lg bg-carbon-850 border border-red-500/30 hover:border-red-500/60 active:bg-red-950/30 flex flex-col items-center justify-center text-center">
+          <span class="text-xs font-bold text-red-300">КРЯК ×2</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">Двойной</span>
+        </button>
+
+      </div>
+
+      <!-- Вспомогательная строка: КЛАКСОН, СГО (СТРОБОСКОПЫ) и ГОРЯЧАЯ 15С -->
+      <div class="grid grid-cols-3 gap-2 font-mono pt-0.5">
+        <button id="btnBibika" class="tactile-btn py-2.5 px-2 rounded-lg bg-carbon-850 border border-carbon-border hover:border-amber-500/50 flex flex-col items-center justify-center text-center text-zinc-300">
+          <span class="text-xs font-bold">КЛАКСОН</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">340+425 Гц</span>
+        </button>
+
+        <!-- КНОПКА СГО: ПООЧЕРЕДНОЕ МИГАНИЕ СТОРОНАМИ СИНИЙ/КРАСНЫЙ -->
+        <button id="btnSgo" class="tactile-btn py-2.5 px-2 rounded-lg bg-carbon-850 border border-blue-500/40 hover:border-blue-400 active:scale-95 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm">
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500" id="sgoLedR"></span>
+            <span class="text-xs font-extrabold text-blue-400 tracking-wider">СГО</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500" id="sgoLedB"></span>
+          </div>
+          <span class="text-[9px] text-zinc-400 mt-0.5">Стробоскопы</span>
+        </button>
+
+        <button data-siren="hotkey" class="siren-btn tactile-btn py-2.5 px-2 rounded-lg bg-carbon-850 border border-red-500/30 hover:border-red-500/60 flex flex-col items-center justify-center text-center text-red-400">
+          <span class="text-xs font-bold">ГОРЯЧАЯ</span>
+          <span class="text-[9px] text-zinc-500 mt-0.5">15 сек Смерч</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- БЛОК 3: МИНИМАЛИСТИЧНАЯ ТАНГЕНТА PTT -->
+    <div class="bg-carbon-900 border border-carbon-border rounded-xl p-3 flex flex-col gap-2">
+      <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+        <span class="font-semibold text-zinc-300 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> ТАНГЕНТА МИКРОФОНА PTT
+        </span>
+        <span id="recordTimer" class="text-zinc-500">00:00.0</span>
+      </div>
+
+      <button id="recordBtn" class="tactile-btn w-full py-4 rounded-xl bg-carbon-850 border border-carbon-border hover:border-blue-500/60 active:border-blue-500 flex items-center justify-center gap-3 transition">
+        <div class="w-3 h-3 rounded-full bg-blue-500/20 flex items-center justify-center" id="pttDot">
+          <div class="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+        </div>
+        <span id="recBtnTitle" class="font-mono text-xs font-extrabold tracking-wider text-zinc-200 uppercase">ЗАЖАТЬ PTT ДЛЯ РЕЧИ</span>
+      </button>
+
+      <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500 px-1">
+        <span id="recStatusInfo">Зажмите, скажите распоряжение</span>
+        <button id="replayBtn" disabled class="text-zinc-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+          ↺ Повторить
+        </button>
+      </div>
+    </div>
+
+    <!-- Тонкий уровень VU-метра -->
+    <div class="w-full bg-carbon-900 border border-carbon-border/60 rounded px-2 py-1 flex items-center gap-1.5">
+      <span class="text-[8px] font-mono text-zinc-600">VU</span>
+      <div class="flex-1 grid grid-cols-12 gap-0.5 h-1" id="vuMeterBars">
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+        <div class="vu-seg rounded-xs bg-zinc-800 transition-colors"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ПОЛНОЭКРАННЫЙ РЕЖИМ СГО: МИНИМАЛИЗМ, БЫСТРЫЕ ВСПЫШКИ, БЕЛЫЙ ФОН МЕЖДУ НИМИ -->
+  <div id="sgoOverlay" class="fixed inset-0 z-[100] hidden bg-white select-none cursor-pointer flex flex-col items-center justify-center p-4">
+    <!-- Две стороны экрана: Левая (Красная) и Правая (Синяя) на чистом белом фоне -->
+    <div class="absolute inset-0 grid grid-cols-2 pointer-events-none overflow-hidden">
+      <!-- Левая сторона (Красный строб) -->
+      <div id="sgoLeft" class="w-full h-full bg-white flex items-center justify-center">
+        <div class="w-40 h-40 sm:w-64 sm:h-64 rounded-full bg-white/40 blur-3xl"></div>
+      </div>
+      <!-- Правая сторона (Синий строб) -->
+      <div id="sgoRight" class="w-full h-full bg-white flex items-center justify-center">
+        <div class="w-40 h-40 sm:w-64 sm:h-64 rounded-full bg-white/40 blur-3xl"></div>
+      </div>
+    </div>
+
+    <!-- Минимальный HUD: только оперативный кряк и краткий статус выхода -->
+    <div class="z-10 flex flex-col items-center gap-2 pointer-events-auto">
+      <button id="sgoHornBtn" class="tactile-btn px-7 py-3 rounded-full bg-black/85 hover:bg-black text-white font-mono text-xs font-bold tracking-widest shadow-2xl border border-white/20 active:scale-95">
+        КРЯК
+      </button>
+      <span class="text-[10px] font-mono text-zinc-600 bg-white/80 px-2.5 py-0.5 rounded-full backdrop-blur pointer-events-none">
+        ТАП — ВЫКЛ
+      </span>
+    </div>
+  </div>
+
+  <footer class="w-full border-t border-carbon-border/70 py-2 px-4 text-center text-[9px] text-zinc-600 font-mono max-w-md mx-auto flex items-center justify-between">
+    <span>ПК «ЭЛИНА» // ГРД-100</span>
+    <span>WAIL 1/2 • SRT • 70HZ HORN</span>
+  </footer>
+
+  <script>
+    let audioCtx = null;
+    let masterGain = null;
+    let analyserNode = null;
+    let vuInterval = null;
+
+    // Режим СГО (Светосигнальное Оборудование - стробоскопы по сторонам)
+    let isSgoActive = false;
+    let sgoTimeout = null;
+    let sgoStep = 0;
+    let sgoWakeLock = null;
+
+    // Сверхбыстрый стробоскопический паттерн на белом фоне:
+    // Тройная молниеносная вспышка красным слева, затем тройная синим справа
+    const sgoPattern = [
+      // Левая сторона (Красный) — ультра-короткие импульсы
+      { left: true, right: false, dur: 24 },
+      { left: false, right: false, dur: 18 },
+      { left: true, right: false, dur: 24 },
+      { left: false, right: false, dur: 18 },
+      { left: true, right: false, dur: 24 },
+      { left: false, right: false, dur: 36 },
+      // Правая сторона (Синий) — ультра-короткие импульсы
+      { left: false, right: true, dur: 24 },
+      { left: false, right: false, dur: 18 },
+      { left: false, right: true, dur: 24 },
+      { left: false, right: false, dur: 18 },
+      { left: false, right: true, dur: 24 },
+      { left: false, right: false, dur: 42 }
+    ];
+
+    // Микрофон PTT
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let currentMicStream = null;
+    let lastAudioBuffer = null;
+    let isRecording = false;
+    let recordStartTime = 0;
+    let timerInterval = null;
+
+    // Сирены
+    let currentSiren = null;
+    let activeSirenNodes = [];
+    let srtInterval = null;
+    let hiloTimer = null;
+    let hotkeyTimer = null;
+
+    // Состояния кнопок
+    let elinaKryakNodes = null;
+    let kryakStartTime = 0;
+    const MIN_TAP_DURATION = 0.22;
+
+    let isManualHeld = false;
+    let manualNodes = null;
+
+    let isBibikaHoldActive = false;
+    let bibikaHoldNodes = [];
+    let bibikaPressTimer = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass({ latencyHint: 'interactive' });
+
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.96, audioCtx.currentTime);
+
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64;
+        analyserNode.smoothingTimeConstant = 0.7;
+
+        masterGain.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
+
+        startVuMeter();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    // Волновой формирователь сатурации рупора ГРД-100 (200/400W)
+    function makeElinaDriverDistortion(k = 3.6) {
+      const n = 44100;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = Math.tanh(k * x) / Math.tanh(k);
+      }
+      return curve;
+    }
+
+    // Акустический фильтр металлического раструба Элина
+    function createElinaHornAcousticFilter(ctx) {
+      const now = ctx.currentTime;
+
+      // 1. Срез ниже 330 Гц
+      const hpf = ctx.createBiquadFilter();
+      hpf.type = 'highpass';
+      hpf.frequency.setValueAtTime(330, now);
+
+      // 2. Главный резонанс металлического колокола 1240 Гц
+      const peak1 = ctx.createBiquadFilter();
+      peak1.type = 'peaking';
+      peak1.frequency.setValueAtTime(1240, now);
+      peak1.Q.setValueAtTime(2.2, now);
+      peak1.gain.setValueAtTime(11.0, now);
+
+      // 3. Звон диафрагмы 2420 Гц
+      const peak2 = ctx.createBiquadFilter();
+      peak2.type = 'peaking';
+      peak2.frequency.setValueAtTime(2420, now);
+      peak2.Q.setValueAtTime(2.6, now);
+      peak2.gain.setValueAtTime(6.5, now);
+
+      // 4. Срез паразитного ВЧ-песка
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.setValueAtTime(3850, now);
+
+      const shaper = ctx.createWaveShaper();
+      shaper.curve = makeElinaDriverDistortion(3.8);
+
+      hpf.connect(peak1);
+      peak1.connect(peak2);
+      peak2.connect(lpf);
+      lpf.connect(shaper);
+
+      return { input: hpf, output: shaper };
+    }
+
+    function killActiveElinaKryakNow() {
+      if (!elinaKryakNodes) return;
+      const nodes = elinaKryakNodes;
+      elinaKryakNodes = null;
+
+      try {
+        const now = audioCtx ? audioCtx.currentTime : 0;
+        if (nodes.masterGain && audioCtx) {
+          nodes.masterGain.gain.cancelScheduledValues(now);
+          nodes.masterGain.gain.setValueAtTime(nodes.masterGain.gain.value, now);
+          nodes.masterGain.gain.linearRampToValueAtTime(0.0001, now + 0.025);
+        }
+        setTimeout(() => {
+          nodes.oscillators.forEach(osc => {
+            try { osc.stop(); osc.disconnect(); } catch (e) {}
+          });
+          if (nodes.lfo) {
+            try { nodes.lfo.stop(); nodes.lfo.disconnect(); } catch (e) {}
+          }
+          if (nodes.amLfo) {
+            try { nodes.amLfo.stop(); nodes.amLfo.disconnect(); } catch (e) {}
+          }
+        }, 30);
+      } catch (e) {}
+
+      setStrobeActive(false);
+      document.getElementById('kryakLed').style.opacity = '0';
+      document.getElementById('btnKryakElina').classList.remove('active-glow-red');
+    }
+
+    function startElinaKryak() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      if (elinaKryakNodes) {
+        killActiveElinaKryakNow();
+      }
+
+      kryakStartTime = now;
+      setStrobeActive(true, 'red');
+      document.getElementById('kryakLed').style.opacity = '1';
+      document.getElementById('btnKryakElina').classList.add('active-glow-red');
+      updateModeText('HORN 70HZ');
+
+      // 3 генератора (несущая 462 Гц, обертон 693 Гц, утробный 231 Гц)
+      const oscCore = ctx.createOscillator();
+      const oscHarm = ctx.createOscillator();
+      const oscSub = ctx.createOscillator();
+
+      oscCore.type = 'square';
+      oscHarm.type = 'sawtooth';
+      oscSub.type = 'triangle';
+
+      oscCore.frequency.setValueAtTime(535, now);
+      oscCore.frequency.exponentialRampToValueAtTime(462, now + 0.022);
+
+      oscHarm.frequency.setValueAtTime(800, now);
+      oscHarm.frequency.exponentialRampToValueAtTime(693, now + 0.022);
+
+      oscSub.frequency.setValueAtTime(270, now);
+      oscSub.frequency.exponentialRampToValueAtTime(231, now + 0.022);
+
+      const coreGain = ctx.createGain();
+      const harmGain = ctx.createGain();
+      const subGain = ctx.createGain();
+
+      coreGain.gain.setValueAtTime(0.72, now);
+      harmGain.gain.setValueAtTime(0.35, now);
+      subGain.gain.setValueAtTime(0.40, now);
+
+      oscCore.connect(coreGain);
+      oscHarm.connect(harmGain);
+      oscSub.connect(subGain);
+
+      const oscMix = ctx.createGain();
+      coreGain.connect(oscMix);
+      harmGain.connect(oscMix);
+      subGain.connect(oscMix);
+
+      // Жесткая модуляция 70.8 Гц (визитная карточка «Элина»)
+      const lfo70Hz = ctx.createOscillator();
+      lfo70Hz.type = 'square';
+      lfo70Hz.frequency.setValueAtTime(70.8, now);
+
+      const fskModGain = ctx.createGain();
+      fskModGain.gain.setValueAtTime(105, now);
+
+      lfo70Hz.connect(fskModGain);
+      fskModGain.connect(oscCore.frequency);
+      fskModGain.connect(oscHarm.frequency);
+
+      // Амплитудное тремоло
+      const amGainNode = ctx.createGain();
+      amGainNode.gain.setValueAtTime(0.65, now);
+
+      const amLfo = ctx.createOscillator();
+      amLfo.type = 'sawtooth';
+      amLfo.frequency.setValueAtTime(70.8, now);
+
+      const amDepth = ctx.createGain();
+      amDepth.gain.setValueAtTime(0.35, now);
+      amLfo.connect(amDepth);
+      amDepth.connect(amGainNode.gain);
+
+      oscMix.connect(amGainNode);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      amGainNode.connect(hornFilter.input);
+
+      const kMasterGain = ctx.createGain();
+      kMasterGain.gain.setValueAtTime(0.001, now);
+      kMasterGain.gain.linearRampToValueAtTime(0.95, now + 0.010);
+
+      hornFilter.output.connect(kMasterGain);
+      kMasterGain.connect(masterGain);
+
+      lfo70Hz.start(now);
+      amLfo.start(now);
+      oscCore.start(now);
+      oscHarm.start(now);
+      oscSub.start(now);
+
+      elinaKryakNodes = {
+        oscillators: [oscCore, oscHarm, oscSub],
+        lfo: lfo70Hz,
+        amLfo: amLfo,
+        masterGain: kMasterGain,
+        coreOsc: oscCore
+      };
+    }
+
+    function stopElinaKryak() {
+      if (!elinaKryakNodes) return;
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const elapsed = now - kryakStartTime;
+
+      if (elapsed < MIN_TAP_DURATION) {
+        const remain = MIN_TAP_DURATION - elapsed;
+        const stopTime = now + remain;
+
+        elinaKryakNodes.masterGain.gain.setValueAtTime(0.95, stopTime - 0.03);
+        elinaKryakNodes.masterGain.gain.linearRampToValueAtTime(0.0001, stopTime);
+        elinaKryakNodes.coreOsc.frequency.exponentialRampToValueAtTime(380, stopTime);
+
+        const snapshot = elinaKryakNodes;
+        elinaKryakNodes = null;
+
+        setTimeout(() => {
+          snapshot.oscillators.forEach(o => { try { o.stop(); o.disconnect(); } catch (e) {} });
+          try { snapshot.lfo.stop(); snapshot.lfo.disconnect(); } catch (e) {}
+          try { snapshot.amLfo.stop(); snapshot.amLfo.disconnect(); } catch (e) {}
+          document.getElementById('kryakLed').style.opacity = '0';
+          document.getElementById('btnKryakElina').classList.remove('active-glow-red');
+          setStrobeActive(false);
+          updateModeText('ГОТОВ');
+        }, (remain + 0.03) * 1000);
+      } else {
+        const releaseTime = now + 0.035;
+        elinaKryakNodes.masterGain.gain.cancelScheduledValues(now);
+        elinaKryakNodes.masterGain.gain.setValueAtTime(elinaKryakNodes.masterGain.gain.value, now);
+        elinaKryakNodes.masterGain.gain.linearRampToValueAtTime(0.0001, releaseTime);
+        elinaKryakNodes.coreOsc.frequency.exponentialRampToValueAtTime(370, releaseTime);
+
+        const snapshot = elinaKryakNodes;
+        elinaKryakNodes = null;
+
+        setTimeout(() => {
+          snapshot.oscillators.forEach(o => { try { o.stop(); o.disconnect(); } catch (e) {} });
+          try { snapshot.lfo.stop(); snapshot.lfo.disconnect(); } catch (e) {}
+          try { snapshot.amLfo.stop(); snapshot.amLfo.disconnect(); } catch (e) {}
+          document.getElementById('kryakLed').style.opacity = '0';
+          document.getElementById('btnKryakElina').classList.remove('active-glow-red');
+          setStrobeActive(false);
+          updateModeText('ГОТОВ');
+        }, 40);
+      }
+    }
+
+    function playDoubleKryak() {
+      stopAllSirens();
+      startElinaKryak();
+      setTimeout(() => {
+        stopElinaKryak();
+        setTimeout(() => {
+          startElinaKryak();
+          setTimeout(() => {
+            stopElinaKryak();
+          }, 200);
+        }, 110);
+      }, 200);
+    }
+
+    function startManualSiren() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      stopAllSirens();
+
+      isManualHeld = true;
+      setStrobeActive(true, 'blue');
+      document.getElementById('manualLed').style.opacity = '1';
+      document.getElementById('btnManual').classList.add('active-glow-blue');
+      updateModeText('MANUAL ▲');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+
+      osc.frequency.setValueAtTime(570, now);
+      osc.frequency.exponentialRampToValueAtTime(1620, now + 1.8);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+
+      amp.gain.setValueAtTime(0.001, now);
+      amp.gain.linearRampToValueAtTime(0.92, now + 0.08);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      osc.start(now);
+      manualNodes = { osc, amp, hornFilter };
+    }
+
+    function stopManualSiren() {
+      if (!isManualHeld || !manualNodes) return;
+      isManualHeld = false;
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      updateModeText('MANUAL ▼');
+
+      const currentFreq = manualNodes.osc.frequency.value || 1100;
+      manualNodes.osc.frequency.cancelScheduledValues(now);
+      manualNodes.osc.frequency.setValueAtTime(currentFreq, now);
+      manualNodes.osc.frequency.exponentialRampToValueAtTime(450, now + 2.1);
+
+      manualNodes.amp.gain.cancelScheduledValues(now);
+      manualNodes.amp.gain.setValueAtTime(manualNodes.amp.gain.value, now);
+      manualNodes.amp.gain.linearRampToValueAtTime(0.0001, now + 2.15);
+
+      const snapshot = manualNodes;
+      manualNodes = null;
+
+      setTimeout(() => {
+        try { snapshot.osc.stop(); snapshot.osc.disconnect(); } catch (e) {}
+        document.getElementById('manualLed').style.opacity = '0';
+        document.getElementById('btnManual').classList.remove('active-glow-blue');
+        setStrobeActive(false);
+        updateModeText('ГОТОВ');
+      }, 2180);
+    }
+
+    function stopAllSirens() {
+      if (srtInterval) {
+        clearInterval(srtInterval);
+        srtInterval = null;
+      }
+      if (hiloTimer) {
+        clearInterval(hiloTimer);
+        hiloTimer = null;
+      }
+      if (hotkeyTimer) {
+        clearTimeout(hotkeyTimer);
+        hotkeyTimer = null;
+      }
+
+      activeSirenNodes.forEach(node => {
+        try { node.stop(); node.disconnect(); } catch (e) {}
+      });
+      activeSirenNodes = [];
+
+      stopBibikaContinuous();
+      killActiveElinaKryakNow();
+      stopManualSiren();
+
+      currentSiren = null;
+      if (!isSgoActive) {
+        setStrobeActive(false);
+        updateModeText('ГОТОВ');
+      }
+
+      document.querySelectorAll('.siren-btn').forEach(b => {
+        b.classList.remove('border-blue-500', 'bg-blue-950/40', 'border-red-500', 'bg-red-950/40', 'border-amber-500', 'bg-amber-950/40');
+      });
+    }
+
+    // WAIL 1 (ГОСТ 4.4с, 600–1580 Гц)
+    function playWail1() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      setStrobeActive(true, 'both');
+      updateModeText('WAIL 1 (ГОСТ)');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+
+      const lfo = ctx.createOscillator();
+      lfo.type = 'triangle';
+      lfo.frequency.setValueAtTime(1 / 4.4, now); // Период 4.4 сек
+
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(490, now);
+
+      osc.frequency.setValueAtTime(1090, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+      amp.gain.setValueAtTime(0.001, now);
+      amp.gain.linearRampToValueAtTime(0.92, now + 0.1);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      lfo.start(now);
+      osc.start(now);
+
+      activeSirenNodes.push(osc, lfo);
+    }
+
+    // WAIL 2 (Скоростной 2.7с, 680–1680 Гц)
+    function playWail2() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      setStrobeActive(true, 'both');
+      updateModeText('WAIL 2 (2.7С)');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+
+      const lfo = ctx.createOscillator();
+      lfo.type = 'triangle';
+      lfo.frequency.setValueAtTime(1 / 2.7, now); // Период 2.7 сек
+
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(500, now);
+
+      osc.frequency.setValueAtTime(1180, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+      amp.gain.setValueAtTime(0.001, now);
+      amp.gain.linearRampToValueAtTime(0.92, now + 0.08);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      lfo.start(now);
+      osc.start(now);
+
+      activeSirenNodes.push(osc, lfo);
+    }
+
+    // SRT «ПЛАЧ» (Надрывный плачущий спецсигнал Элина)
+    // Асимметричный вокальный взлет за 0.4с и плачущий инерционный спад с вибрато раструба
+    function playSrtPlach() {
+      const ctx = getAudioContext();
+      setStrobeActive(true, 'both');
+      updateModeText('SRT «ПЛАЧ»');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+
+      // Легкое плачущее тремоло/вибрато раструба 5.8 Гц
+      const weepLfo = ctx.createOscillator();
+      weepLfo.type = 'sine';
+      weepLfo.frequency.setValueAtTime(5.8, ctx.currentTime);
+
+      const weepGain = ctx.createGain();
+      weepGain.gain.setValueAtTime(32, ctx.currentTime);
+
+      weepLfo.connect(weepGain);
+      weepGain.connect(osc.frequency);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+      amp.gain.setValueAtTime(0.001, ctx.currentTime);
+      amp.gain.linearRampToValueAtTime(0.94, ctx.currentTime + 0.05);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      weepLfo.start(ctx.currentTime);
+      osc.start(ctx.currentTime);
+      activeSirenNodes.push(osc, weepLfo);
+
+      // Цикл одного «всхлипа/плача»: 1.55 секунды
+      function runCryCycle() {
+        if (currentSiren !== 'srt' || !audioCtx) return;
+        const t = audioCtx.currentTime;
+
+        // Взлёт (атака крика): 0.40 сек до 1640 Гц
+        osc.frequency.cancelScheduledValues(t);
+        osc.frequency.setValueAtTime(590, t);
+        osc.frequency.exponentialRampToValueAtTime(1640, t + 0.40);
+
+        // Тягучий плачущий спад: 1.15 сек до 540 Гц
+        osc.frequency.exponentialRampToValueAtTime(540, t + 1.55);
+      }
+
+      runCryCycle();
+      srtInterval = setInterval(runCryCycle, 1550);
+    }
+
+    // YELP (Визг 3.8 Гц)
+    function playYelp() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      setStrobeActive(true, 'both');
+      updateModeText('YELP (ВИЗГ)');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sawtooth';
+
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sawtooth';
+      lfo.frequency.setValueAtTime(3.8, now);
+
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(470, now);
+
+      osc.frequency.setValueAtTime(1110, now);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+      amp.gain.setValueAtTime(0.001, now);
+      amp.gain.linearRampToValueAtTime(0.92, now + 0.05);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      lfo.start(now);
+      osc.start(now);
+
+      activeSirenNodes.push(osc, lfo);
+    }
+
+    // HI-LO (2 тона)
+    function playHiLo() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      setStrobeActive(true, 'both');
+      updateModeText('HI-LO (2 ТОНА)');
+
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(940, now);
+
+      let toggle = false;
+      hiloTimer = setInterval(() => {
+        if (currentSiren === 'hilo' && audioCtx) {
+          toggle = !toggle;
+          const targetFreq = toggle ? 680 : 940;
+          osc.frequency.cancelScheduledValues(audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(targetFreq, audioCtx.currentTime + 0.014);
+        }
+      }, 530);
+
+      const hornFilter = createElinaHornAcousticFilter(ctx);
+      const amp = ctx.createGain();
+      amp.gain.setValueAtTime(0.001, now);
+      amp.gain.linearRampToValueAtTime(0.85, now + 0.05);
+
+      osc.connect(hornFilter.input);
+      hornFilter.output.connect(amp);
+      amp.connect(masterGain);
+
+      osc.start(now);
+      activeSirenNodes.push(osc);
+    }
+
+    // Режим «Горячая 15с»
+    function playHotkeyMode(btn) {
+      stopAllSirens();
+      currentSiren = 'hotkey';
+      btn.classList.add('border-red-500', 'bg-red-950/40');
+      setStrobeActive(true, 'both');
+      updateModeText('ГОРЯЧАЯ (15С)');
+
+      playYelp();
+
+      hotkeyTimer = setTimeout(() => {
+        stopAllSirens();
+      }, 15000);
+    }
+
+    function toggleSiren(name, btn) {
+      if (currentSiren === name) {
+        stopAllSirens();
+        return;
+      }
+      stopAllSirens();
+      currentSiren = name;
+
+      btn.classList.add('border-blue-500', 'bg-blue-950/40');
+
+      if (name === 'wail1') playWail1();
+      else if (name === 'wail2') playWail2();
+      else if (name === 'srt') {
+        btn.classList.remove('border-blue-500', 'bg-blue-950/40');
+        btn.classList.add('border-amber-500', 'bg-amber-950/40');
+        playSrtPlach();
+      }
+      else if (name === 'yelp') playYelp();
+      else if (name === 'hilo') playHiLo();
+      else if (name === 'hotkey') playHotkeyMode(btn);
+    }
+
+    function startBibikaContinuous() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      stopAllSirens();
+
+      setStrobeActive(true, 'amber');
+      updateModeText('КЛАКСОН');
+
+      const hornLow = ctx.createOscillator();
+      const hornHigh = ctx.createOscillator();
+      const hornSub = ctx.createOscillator();
+
+      hornLow.type = 'sawtooth';
+      hornHigh.type = 'sawtooth';
+      hornSub.type = 'triangle';
+
+      hornLow.frequency.setValueAtTime(340, now);
+      hornHigh.frequency.setValueAtTime(425, now);
+      hornSub.frequency.setValueAtTime(170, now);
+
+      const bpf = ctx.createBiquadFilter();
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(760, now);
+      bpf.Q.setValueAtTime(1.4, now);
+
+      const hornGain = ctx.createGain();
+      hornGain.gain.setValueAtTime(0.001, now);
+      hornGain.gain.linearRampToValueAtTime(0.92, now + 0.018);
+
+      hornLow.connect(bpf);
+      hornHigh.connect(bpf);
+      hornSub.connect(bpf);
+      bpf.connect(hornGain);
+      hornGain.connect(masterGain);
+
+      hornLow.start(now);
+      hornHigh.start(now);
+      hornSub.start(now);
+
+      bibikaHoldNodes = [hornLow, hornHigh, hornSub, hornGain];
+    }
+
+    function stopBibikaContinuous() {
+      if (bibikaHoldNodes.length > 0 && audioCtx) {
+        const now = audioCtx.currentTime;
+        const gainNode = bibikaHoldNodes[3];
+        if (gainNode) {
+          gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+          gainNode.gain.linearRampToValueAtTime(0.001, now + 0.035);
+        }
+        bibikaHoldNodes.slice(0, 3).forEach(node => {
+          try { node.stop(now + 0.045); } catch (e) {}
+        });
+        bibikaHoldNodes = [];
+      }
+      setStrobeActive(false);
+      updateModeText('ГОТОВ');
+    }
+
+    function playBibikaQuick() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      stopAllSirens();
+      setStrobeActive(true, 'amber');
+      updateModeText('КЛАКСОН ×2');
+
+      function burst(t, dur) {
+        const hLow = ctx.createOscillator();
+        const hHigh = ctx.createOscillator();
+        hLow.type = 'sawtooth';
+        hHigh.type = 'sawtooth';
+        hLow.frequency.setValueAtTime(340, t);
+        hHigh.frequency.setValueAtTime(425, t);
+
+        const bpf = ctx.createBiquadFilter();
+        bpf.type = 'bandpass';
+        bpf.frequency.setValueAtTime(760, t);
+        bpf.Q.setValueAtTime(1.4, t);
+
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(0.001, t);
+        g.gain.linearRampToValueAtTime(0.90, t + 0.015);
+        g.gain.setValueAtTime(0.90, t + dur - 0.02);
+        g.gain.linearRampToValueAtTime(0.001, t + dur);
+
+        hLow.connect(bpf);
+        hHigh.connect(bpf);
+        bpf.connect(g);
+        g.connect(masterGain);
+
+        hLow.start(t);
+        hHigh.start(t);
+        hLow.stop(t + dur + 0.025);
+        hHigh.stop(t + dur + 0.025);
+      }
+
+      burst(now, 0.11);
+      burst(now + 0.17, 0.23);
+
+      setTimeout(() => {
+        setStrobeActive(false);
+        updateModeText('ГОТОВ');
+      }, 430);
+    }
+
+    function playRadioChirp(isOpen) {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const bpf = ctx.createBiquadFilter();
+
+      bpf.type = 'bandpass';
+      bpf.frequency.setValueAtTime(isOpen ? 2500 : 1750, now);
+      bpf.Q.setValueAtTime(4.2, now);
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(isOpen ? 1200 : 750, now);
+      osc.frequency.exponentialRampToValueAtTime(isOpen ? 450 : 220, now + 0.045);
+
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      osc.connect(bpf);
+      bpf.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + 0.055);
+    }
+
+    function strictlyKillMicrophone() {
+      if (currentMicStream) {
+        currentMicStream.getTracks().forEach(track => {
+          track.stop();
+          track.enabled = false;
+        });
+        currentMicStream = null;
+      }
+      mediaRecorder = null;
+    }
+
+    async function startVoiceRecording() {
+      if (isRecording) return;
+      stopAllSirens();
+      getAudioContext();
+      playRadioChirp(true);
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true }
+        });
+        currentMicStream = stream;
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          strictlyKillMicrophone();
+          if (recordedChunks.length === 0) return;
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+
+          try {
+            const arrayBuffer = await blob.arrayBuffer();
+            lastAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            document.getElementById('replayBtn').disabled = false;
+            playProcessedVoice();
+          } catch (err) {
+            document.getElementById('recStatusInfo').textContent = 'Ошибка обработки аудио';
+          }
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        recordStartTime = Date.now();
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          const elapsed = (Date.now() - recordStartTime) / 1000;
+          document.getElementById('recordTimer').textContent = `00:${elapsed.toFixed(1).padStart(4, '0')}`;
+        }, 100);
+
+        document.getElementById('recordBtn').classList.add('border-blue-500', 'bg-blue-950/40');
+        document.getElementById('recBtnTitle').textContent = 'ПЕРЕДАЧА В ЭФИР...';
+        document.getElementById('recBtnTitle').classList.add('text-blue-400');
+        document.getElementById('recStatusInfo').textContent = 'Говорите команду в микрофон...';
+        updateModeText('ТАНГЕНТА: ПЕРЕДАЧА');
+
+      } catch (err) {
+        strictlyKillMicrophone();
+        document.getElementById('recStatusInfo').textContent = 'Микрофон заблокирован';
+      }
+    }
+
+    function stopVoiceRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+
+      clearInterval(timerInterval);
+      playRadioChirp(false);
+
+      document.getElementById('recordBtn').classList.remove('border-blue-500', 'bg-blue-950/40');
+      document.getElementById('recBtnTitle').textContent = 'ЗАЖАТЬ PTT ДЛЯ РЕЧИ';
+      document.getElementById('recBtnTitle').classList.remove('text-blue-400');
+      updateModeText('ГОТОВ');
+
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      } else {
+        strictlyKillMicrophone();
+      }
+    }
+
+    function playProcessedVoice() {
+      if (!lastAudioBuffer) return;
+      const ctx = getAudioContext();
+
+      playRadioChirp(true);
+      updateModeText('РУПОР: 200W');
+      setStrobeActive(true, 'both');
+
+      const voiceSource = ctx.createBufferSource();
+      voiceSource.buffer = lastAudioBuffer;
+
+      const hpf = ctx.createBiquadFilter();
+      hpf.type = 'highpass';
+      hpf.frequency.value = 460;
+      hpf.Q.value = 1.3;
+
+      const peak = ctx.createBiquadFilter();
+      peak.type = 'peaking';
+      peak.frequency.value = 1800;
+      peak.Q.value = 2.4;
+      peak.gain.value = 12.0;
+
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.value = 3300;
+
+      const shaper = ctx.createWaveShaper();
+      shaper.curve = makeElinaDriverDistortion(4.2);
+
+      const amp = ctx.createGain();
+      amp.gain.value = 2.4;
+
+      voiceSource.connect(hpf);
+      hpf.connect(peak);
+      peak.connect(lpf);
+      lpf.connect(shaper);
+      shaper.connect(amp);
+      amp.connect(masterGain);
+
+      document.getElementById('recStatusInfo').textContent = 'Выдача через рупор СГУ...';
+
+      voiceSource.onended = () => {
+        playRadioChirp(false);
+        setStrobeActive(false);
+        updateModeText('ГОТОВ');
+        document.getElementById('recStatusInfo').textContent = 'Зажмите PTT для новой фразы';
+      };
+
+      voiceSource.start(ctx.currentTime + 0.05);
+    }
+
+    function setStrobeActive(active, type = 'both') {
+      const r = document.getElementById('strobeR');
+      const b = document.getElementById('strobeB');
+
+      r.className = 'w-2 h-1.5 rounded-sm bg-red-500/30';
+      b.className = 'w-2 h-1.5 rounded-sm bg-blue-500/30';
+
+      if (!active) return;
+      if (type === 'red' || type === 'both' || type === 'amber') r.classList.add('strobe-r');
+      if (type === 'blue' || type === 'both' || type === 'amber') b.classList.add('strobe-b');
+    }
+
+    function sgoTick() {
+      if (!isSgoActive) return;
+
+      const step = sgoPattern[sgoStep];
+      const leftEl = document.getElementById('sgoLeft');
+      const rightEl = document.getElementById('sgoRight');
+
+      if (leftEl) {
+        // При вспышке — чистый сочный красный, между вспышками — яркий белый
+        leftEl.style.backgroundColor = step.left ? '#ff0020' : '#ffffff';
+      }
+      if (rightEl) {
+        // При вспышке — яркий синий строб, между вспышками — яркий белый
+        rightEl.style.backgroundColor = step.right ? '#004cff' : '#ffffff';
+      }
+
+      sgoStep = (sgoStep + 1) % sgoPattern.length;
+      sgoTimeout = setTimeout(sgoTick, step.dur);
+    }
+
+    async function startSgo() {
+      if (isSgoActive) return;
+      isSgoActive = true;
+      sgoStep = 0;
+
+      const overlay = document.getElementById('sgoOverlay');
+      overlay.classList.remove('hidden');
+
+      const leftEl = document.getElementById('sgoLeft');
+      const rightEl = document.getElementById('sgoRight');
+      if (leftEl) leftEl.style.backgroundColor = '#ffffff';
+      if (rightEl) rightEl.style.backgroundColor = '#ffffff';
+
+      const btnSgo = document.getElementById('btnSgo');
+      btnSgo.classList.add('border-blue-500', 'bg-blue-950/50', 'active-glow-blue');
+      document.getElementById('sgoLedR').classList.add('animate-ping');
+      document.getElementById('sgoLedB').classList.add('animate-ping');
+
+      setStrobeActive(true, 'both');
+      updateModeText('СГО: СТРОБЫ');
+
+      // Блокировка отключения экрана (WakeLock API)
+      if ('wakeLock' in navigator) {
+        try {
+          sgoWakeLock = await navigator.wakeLock.request('screen');
+        } catch (e) {}
+      }
+
+      sgoTick();
+    }
+
+    function stopSgo() {
+      if (!isSgoActive) return;
+      isSgoActive = false;
+
+      if (sgoTimeout) {
+        clearTimeout(sgoTimeout);
+        sgoTimeout = null;
+      }
+
+      const overlay = document.getElementById('sgoOverlay');
+      overlay.classList.add('hidden');
+
+      const leftEl = document.getElementById('sgoLeft');
+      const rightEl = document.getElementById('sgoRight');
+      if (leftEl) leftEl.style.backgroundColor = '#ffffff';
+      if (rightEl) rightEl.style.backgroundColor = '#ffffff';
+
+      const btnSgo = document.getElementById('btnSgo');
+      btnSgo.classList.remove('border-blue-500', 'bg-blue-950/50', 'active-glow-blue');
+      document.getElementById('sgoLedR').classList.remove('animate-ping');
+      document.getElementById('sgoLedB').classList.remove('animate-ping');
+
+      if (sgoWakeLock) {
+        try { sgoWakeLock.release(); } catch (e) {}
+        sgoWakeLock = null;
+      }
+
+      if (!currentSiren) {
+        setStrobeActive(false);
+        updateModeText('ГОТОВ');
+      }
+    }
+
+    function toggleSgo() {
+      if (isSgoActive) {
+        stopSgo();
+      } else {
+        startSgo();
+      }
+    }
+
+    function updateModeText(text) {
+      const el = document.getElementById('activeModeLabel');
+      if (el) el.textContent = text;
+    }
+
+    function startVuMeter() {
+      if (vuInterval) return;
+      const bars = document.querySelectorAll('#vuMeterBars .vu-seg');
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+      vuInterval = setInterval(() => {
+        if (!analyserNode) return;
+        analyserNode.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const avg = sum / dataArray.length;
+        const activeCount = Math.min(12, Math.round((avg / 128) * 12));
+
+        bars.forEach((bar, index) => {
+          if (index < activeCount) {
+            bar.className = index < 8 ? 'vu-seg rounded-xs bg-blue-500' : 'vu-seg rounded-xs bg-red-500';
+          } else {
+            bar.className = 'vu-seg rounded-xs bg-zinc-800';
+          }
+        });
+      }, 50);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+
+      // PTT
+      const recBtn = document.getElementById('recordBtn');
+      recBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startVoiceRecording(); });
+      window.addEventListener('touchend', () => { if (isRecording) stopVoiceRecording(); });
+      recBtn.addEventListener('mousedown', (e) => { e.preventDefault(); startVoiceRecording(); });
+      window.addEventListener('mouseup', () => { if (isRecording) stopVoiceRecording(); });
+      document.getElementById('replayBtn').addEventListener('click', playProcessedVoice);
+
+      // ГОРН (КРЯК 70 Гц)
+      const btnElina = document.getElementById('btnKryakElina');
+      let isKryakPressed = false;
+
+      const handleKryakDown = (e) => {
+        e.preventDefault();
+        stopAllSirens();
+        isKryakPressed = true;
+        startElinaKryak();
+      };
+      const handleKryakUp = (e) => {
+        if (!isKryakPressed) return;
+        isKryakPressed = false;
+        stopElinaKryak();
+      };
+
+      btnElina.addEventListener('touchstart', handleKryakDown);
+      window.addEventListener('touchend', handleKryakUp);
+      window.addEventListener('touchcancel', handleKryakUp);
+      btnElina.addEventListener('mousedown', handleKryakDown);
+      window.addEventListener('mouseup', handleKryakUp);
+
+      // Двойной кряк
+      document.getElementById('btnDoubleKryak').addEventListener('click', (e) => {
+        e.preventDefault();
+        playDoubleKryak();
+      });
+
+      // MANUAL
+      const btnManual = document.getElementById('btnManual');
+      const handleManualDown = (e) => { e.preventDefault(); startManualSiren(); };
+      const handleManualUp = (e) => { if (isManualHeld) stopManualSiren(); };
+
+      btnManual.addEventListener('touchstart', handleManualDown);
+      window.addEventListener('touchend', handleManualUp);
+      window.addEventListener('touchcancel', handleManualUp);
+      btnManual.addEventListener('mousedown', handleManualDown);
+      window.addEventListener('mouseup', handleManualUp);
+
+      // КЛАКСОН
+      const btnBibika = document.getElementById('btnBibika');
+      const handleBibikaStart = (e) => {
+        e.preventDefault();
+        stopAllSirens();
+        bibikaPressTimer = setTimeout(() => {
+          isBibikaHoldActive = true;
+          startBibikaContinuous();
+        }, 170);
+      };
+      const handleBibikaEnd = () => {
+        if (bibikaPressTimer) {
+          clearTimeout(bibikaPressTimer);
+          bibikaPressTimer = null;
+        }
+        if (isBibikaHoldActive) {
+          isBibikaHoldActive = false;
+          stopBibikaContinuous();
+        } else {
+          playBibikaQuick();
+        }
+      };
+
+      btnBibika.addEventListener('touchstart', handleBibikaStart);
+      window.addEventListener('touchend', () => { if (isBibikaHoldActive || bibikaPressTimer) handleBibikaEnd(); });
+      btnBibika.addEventListener('mousedown', handleBibikaStart);
+      window.addEventListener('mouseup', () => { if (isBibikaHoldActive || bibikaPressTimer) handleBibikaEnd(); });
+
+      // КНОПКА СГО (СТРОБОСКОПЫ)
+      document.getElementById('btnSgo').addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleSgo();
+      });
+
+      document.getElementById('btnHeaderSgo').addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleSgo();
+      });
+
+      // Выключение при нажатии в любое место экрана в режиме СГО
+      const sgoOverlay = document.getElementById('sgoOverlay');
+      sgoOverlay.addEventListener('click', (e) => {
+        // Если кликнули не по кнопке Horn внутри оверлея — выключаем
+        if (e.target.id !== 'sgoHornBtn' && !e.target.closest('#sgoHornBtn')) {
+          stopSgo();
+        }
+      });
+
+      // Кнопка Horn (Кряк) прямо поверх мигалки СГО
+      const sgoHornBtn = document.getElementById('sgoHornBtn');
+      let isSgoHornHeld = false;
+
+      const handleSgoHornDown = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        isSgoHornHeld = true;
+        startElinaKryak();
+      };
+
+      const handleSgoHornUp = (e) => {
+        e.stopPropagation();
+        if (!isSgoHornHeld) return;
+        isSgoHornHeld = false;
+        stopElinaKryak();
+      };
+
+      sgoHornBtn.addEventListener('touchstart', handleSgoHornDown);
+      sgoHornBtn.addEventListener('touchend', handleSgoHornUp);
+      sgoHornBtn.addEventListener('mousedown', handleSgoHornDown);
+      sgoHornBtn.addEventListener('mouseup', handleSgoHornUp);
+
+      // СИРЕНЫ (WAIL 1, WAIL 2, SRT «ПЛАЧ», YELP, HI-LO, HOTKEY)
+      document.querySelectorAll('.siren-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const type = btn.getAttribute('data-siren');
+          toggleSiren(type, btn);
+        });
+      });
+
+      // СТОП
+      document.getElementById('stopBtn').addEventListener('click', stopAllSirens);
+    });
+  </script>
+</body>
+</html>
