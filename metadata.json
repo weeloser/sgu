@@ -1,0 +1,8 @@
+{
+  "name": "СГУ Элина",
+  "description": "Специальное громкоговорящее устройство (СГУ) с сиренами Смерч, кряком Элина 70 Гц, ручным подвывом, клаксоном, тангентой PTT и стробоскопами СГО",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

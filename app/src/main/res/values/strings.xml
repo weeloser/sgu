@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">СГУ Элина</string>
+    <string name="system_title">ЭЛИНА // БАРС &amp; СМЕРЧ</string>
+    <string name="gost_subtitle">СИРЕНЫ «СМЕРЧ» (ГОСТ Р 50574)</string>
+    <string name="status_ready">ГОТОВ</string>
+    <string name="horn_70hz">HORN 70HZ</string>
+    <string name="kryak">КРЯК</string>
+    <string name="kryak_desc">Тап / Удержание</string>
+    <string name="manual_title">MANUAL</string>
+    <string name="manual_action">ПОДВЫВ</string>
+    <string name="manual_desc">Разгон при зажатии</string>
+    <string name="stop_all">СТОП ВСЁ</string>
+    <string name="wail1_title">WAIL 1</string>
+    <string name="wail1_desc">ГОСТ 4.4с</string>
+    <string name="wail2_title">WAIL 2</string>
+    <string name="wail2_desc">Быстрый 2.7с</string>
+    <string name="srt_title">SRT</string>
+    <string name="srt_desc">Надрывный</string>
+    <string name="yelp_title">YELP</string>
+    <string name="yelp_desc">Визг 3.8 Гц</string>
+    <string name="hilo_title">HI-LO</string>
+    <string name="hilo_desc">680/940 Гц</string>
+    <string name="double_kryak_title">КРЯК ×2</string>
+    <string name="double_kryak_desc">Двойной</string>
+    <string name="klaxon_title">КЛАКСОН</string>
+    <string name="klaxon_desc">340+425 Гц</string>
+    <string name="sgo_title">СГО</string>
+    <string name="sgo_desc">Стробоскопы</string>
+    <string name="hotkey_title">ГОРЯЧАЯ</string>
+    <string name="hotkey_desc">15 сек Смерч</string>
+    <string name="ptt_title">ТАНГЕНТА МИКРОФОНА PTT</string>
+    <string name="ptt_action">ЗАЖАТЬ PTT ДЛЯ РЕЧИ</string>
+    <string name="ptt_broadcasting">ПЕРЕДАЧА В ЭФИР…</string>
+    <string name="ptt_hint">Зажмите, скажите распоряжение</string>
+    <string name="ptt_recording">Говорите команду в микрофон…</string>
+    <string name="ptt_loudspeaker">Выдача через рупор СГУ (200W)…</string>
+    <string name="replay_title">↺ Повторить</string>
+    <string name="footer_left">ПК «ЭЛИНА» // ГРД-100</string>
+    <string name="footer_right">WAIL 1/2 • SRT • 70HZ HORN</string>
+    <string name="sgo_exit_hint">ТАП ВНЕ КНОПКИ — ВЫКЛ СГО</string>
+    <string name="permission_mic_needed">Требуется разрешение на запись звука для работы тангенты PTT</string>
+    <string name="grant_permission">Разрешить</string>
+</resources>
